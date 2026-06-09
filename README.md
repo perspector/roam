@@ -5,6 +5,8 @@ A nostalgic way to wander around the world. Displays street-level imagery in the
 
 Programmed in ANSI C.
 
+Looks best in [cool-retro-term](https://github.com/Swordfish90/cool-retro-term) with RGB colors enabled.
+
 ## Table of Contents
 - [Installing](#installing)
 - [Usage](#usage)
@@ -17,7 +19,7 @@ Simply clone the project using `git clone https://github.com/perspector/roam`
 Or alternatively, download the project as a .zip file and extract that to your computer.
 
 ## Usage
-Tested on Fedora 44 GNU/Linux. Looks best in [cool-retro-term](https://github.com/Swordfish90/cool-retro-term) with RGB colors enabled.
+Tested on Fedora 44 GNU/Linux.
 
 Simply run with `./roam` , or by double-clicking the file (may need permissions to execute as a program).
 
