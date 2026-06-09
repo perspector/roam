@@ -3,7 +3,7 @@
 
 A nostalgic way to wander around the world. Displays street-level imagery in the terminal as ASCII.
 
-Programmed in ANSI C.
+Written in ANSI C.
 
 Looks best in [cool-retro-term](https://github.com/Swordfish90/cool-retro-term) with RGB colors enabled.
 
@@ -17,6 +17,15 @@ Looks best in [cool-retro-term](https://github.com/Swordfish90/cool-retro-term) 
 Simply clone the project using `git clone https://github.com/perspector/roam`
 
 Or alternatively, download the project as a .zip file and extract that to your computer.
+
+You will also need a Mapillary API token, which you can get by making a developer account at [Mapillary](https://www.mapillary.com/dashboard/developers).
+
+Then just register a new application, add: app name, quick description, and company/university name. You can leave the company website and redirect URL blank.
+Make sure to give READ access! Then, just copy the `Access Token`.
+
+Save your API access token to an environment variable:\
+In GNU/Linux: `export MAPILLARY_TOKEN_ROAM="MLY|0123|456"`\
+Replace `"MLY|0123|456"` with your access token.
 
 ## Usage
 Tested on Fedora 44 GNU/Linux.
