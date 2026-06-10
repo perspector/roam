@@ -210,6 +210,12 @@ static void ask_address(char *country, char *state, char *city, char *zip, char 
 }
 
 
+// Resets the buffering of the terminal to be default (unbuffered) so text is shown immediately.
+void reset_buffering() {
+    setbuf(stdout, NULL);
+}
+
+
 /* ── Result display ───────────────────────────────────────── */
 static void show_result(const char *country, const char *city, const char *state, const char *zip, const char *street,  const char *house, double lat, double lon) {
     printf("\n");
@@ -236,6 +242,8 @@ static void show_result(const char *country, const char *city, const char *state
         printf(         "  │           the zip code and state.        │\n");
         printf(         "  └──────────────────────────────────────────┘\n" RESET);
         printf("\n");
+        printf(SHOW_CUR);
+        reset_buffering();
         exit(1);
     } else {
         printf(YELLOW "  Latitude " RESET ": %lf\n", lat);
@@ -280,12 +288,6 @@ struct ImageMetadata {
     int width;
     char filename[500]; // TODO: reduce length!
 };
-
-
-// Resets the buffering of the terminal to be default (unbuffered) so text is shown immediately.
-void reset_buffering() {
-    setbuf(stdout, NULL);
-}
 
 
 // callback function for curl, writes response data from API to memory, adapted from https://curl.se/libcurl/c/CURLOPT_WRITEFUNCTION.html and OpenAI ChatGPT (GPT-5.5)
@@ -816,6 +818,8 @@ int main() {
         printf("└──────────────────────────────────────────────────────────────────────────┘\n\n");
         printf(RESET);
         fflush(stdout);
+        printf(SHOW_CUR);
+        reset_buffering();
         usleep(7 * 1000 * 1000);
         exit(1);
     }
@@ -911,8 +915,9 @@ int main() {
 
     // reset buffering to no buffering so output is shown immediately as before
     setbuf(stdout, NULL);
+    reset_buffering();
 
-    printf("\n\n\n");
+    printf(SHOW_CUR "\n\n\n");
 
     return 0;
 }
