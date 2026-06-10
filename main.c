@@ -46,9 +46,11 @@ Special thanks to Xander Gouws (GitHub @gouwsxander) for his incredible ascii-vi
 /* Move cursor: row, col (1-indexed) */
 #define MOVE(r,c) printf("\033[%d;%dH", (r), (c))
 
+
 /* ── Terminal size (fallback 80x24) ───────────────────────── */
-#define COLS 80
-#define ROWS 24
+#define COLS 182
+#define ROWS 52
+
 
 /* ── Firework particle ────────────────────────────────────── */
 typedef struct {
@@ -59,7 +61,9 @@ typedef struct {
     const char *color;
 } Particle;
 
+
 #define MAX_PARTS 128
+
 
 static const char *SPARK_COLORS[] = {
     RED, YELLOW, GREEN, CYAN, MAGENTA, ORANGE, GOLD, WHITE
@@ -68,8 +72,8 @@ static const int N_COLORS = 8;
 static const char GLYPHS[] = "*+.o'`ROAM";
 static const int N_GLYPHS = 10;
 
-static void burst(Particle *parts, int *count, double cx, double cy)
-{
+
+static void burst(Particle *parts, int *count, double cx, double cy) {
     int n = 24 + rand() % 16;
     for (int i = 0; i < n && *count < MAX_PARTS; i++, (*count)++) {
         double angle = (2.0 * M_PI * i) / n;
@@ -84,8 +88,8 @@ static void burst(Particle *parts, int *count, double cx, double cy)
     }
 }
 
-static void draw_fireworks(void)
-{
+
+static void draw_fireworks(void) {
     srand((unsigned)time(NULL));
     printf(HIDE_CUR CLEAR);
 
@@ -144,39 +148,37 @@ static void draw_fireworks(void)
     }
 }
 
-/* ── Title card ───────────────────────────────────────────── */
-static void draw_title(void)
-{
-    printf(CLEAR);
 
+/* ── Title card ───────────────────────────────────────────── */
+static void draw_title(void) {
     /* Simple big-text ROAM using block characters - WE CAN CHANGE THE DESIGN HERE ALSO*/
     const char *lines[] = {
-        "          ██████╗  ██████╗  █████╗  ███╗   ███╗",
-        "          ██╔══██╗██╔═══██╗██╔══██╗ ████╗ ████║",
-        "          ██████╔╝██║   ██║███████║ ██╔████╔██║",
-        "          ██╔══██╗██║   ██║██╔══██║ ██║╚██╔╝██║",
-        "          ██║  ██║╚██████╔╝██║  ██║ ██║ ╚═╝ ██║",
-        "          ╚═╝  ╚═╝ ╚═════╝ ╚═╝  ╚═╝ ╚═╝     ╚═╝",
+        "██████╗  ██████╗  █████╗  ███╗   ███╗",
+        "██╔══██╗██╔═══██╗██╔══██╗ ████╗ ████║",
+        "██████╔╝██║   ██║███████║ ██╔████╔██║",
+        "██╔══██╗██║   ██║██╔══██║ ██║╚██╔╝██║",
+        "██║  ██║╚██████╔╝██║  ██║ ██║ ╚═╝ ██║",
+        "╚═╝  ╚═╝ ╚═════╝ ╚═╝  ╚═╝ ╚═╝     ╚═╝",
     };
     int n = sizeof(lines) / sizeof(lines[0]);
     int start_row = (ROWS - n) / 2 - 2;
-
+    int start_col = (COLS - sizeof(lines[0])) / 2 - 18;
     for (int i = 0; i < n; i++) {
-        MOVE(start_row + i, 1);
+        MOVE(start_row + i, start_col);
         printf(GOLD BOLD "%s" RESET, lines[i]);
     }
 
-    MOVE(start_row + n + 1, 1);
+    MOVE(start_row + n + 1, start_col + 1);
     /* centre the tagline */
-    printf("           %sby Benjamin Chase and Kamer Isci%s\n", DIM CYAN, RESET);
+    printf("%sby Benjamin Chase and Kamer Isci%s\n", DIM CYAN, RESET);
 
     fflush(stdout);
     usleep(2400000); /* hold for 2.4 s */
 }
 
+
 /* ── Input helpers ────────────────────────────────────────── */
-static void prompt(const char *label, char *buf, int max)
-{
+static void prompt(const char *label, char *buf, int max) {
     printf(CYAN BOLD "  ▶  " RESET WHITE "%s" RESET ": ", label);
     fflush(stdout);
     if (fgets(buf, max, stdin)) {
@@ -184,38 +186,36 @@ static void prompt(const char *label, char *buf, int max)
     }
 }
 
-static void ask_address(char *country, char *state, char *city, char *zip, char *street, char *house)
-{
+
+static void ask_address(char *country, char *state, char *city, char *zip, char *street, char *house) {
     printf(CLEAR);
     MOVE(3, 1);
     printf(GOLD BOLD "  ┌──────────────────────────────────────┐\n");
-    printf(        "  │            WHERE ARE YOU?            │\n");
+    printf(        "  │     WHERE DO YOU WANT TO TRAVEL?     │\n");
     printf(        "  └──────────────────────────────────────┘\n" RESET);
     printf("\n");
 
-    prompt("Country", country, 64);
+    prompt("Country ", country, 64);
     printf("\n");
-    prompt("State", state, 64);
+    prompt("State   ", state, 64);
     printf("\n");
-    prompt("City   ", city,    64);
+    prompt("City    ", city,    64);
     printf("\n");
     prompt("Zip Code", zip, 64);
     printf("\n");
-    prompt("Street ", street,  128);
+    prompt("Street  ", street,  128);
     printf("\n");
-    prompt("House Number ", house,   16);
+    prompt("House # ", house,   16);
     printf("\n");
 }
 
 
 /* ── Result display ───────────────────────────────────────── */
-static void show_result(const char *country, const char *city, const char *state,
-                        const char *zip, const char *street,  const char *house,
-                        double lat, double lon) {
+static void show_result(const char *country, const char *city, const char *state, const char *zip, const char *street,  const char *house, double lat, double lon) {
     printf("\n");
     printf(GREEN BOLD "  ┌──────────────────────────────────────────┐\n");
-    printf(          "  │              Address summary             │\n");
-    printf(          "  └──────────────────────────────────────────┘\n" RESET);
+    printf(           "  │              Address summary             │\n");
+    printf(           "  └──────────────────────────────────────────┘\n" RESET);
     printf("\n");
     printf(CYAN "  Country  " RESET ": %s\n", country);
     printf(CYAN "  City     " RESET ": %s\n", city);
@@ -225,11 +225,16 @@ static void show_result(const char *country, const char *city, const char *state
     printf("\n");
 
     if (lat == 0.0 && lon == 0.0) {
-        printf(YELLOW "  Latitude " RESET ": ERROR!\n");
-        printf(YELLOW "  Longitude" RESET ": ERROR!\n");
-        printf(GREEN BOLD "  ┌──────────────────────────────────────────┐\n");
-        printf(           "  │      You're in the middle of nowhere     │\n");
-        printf(           "  └──────────────────────────────────────────┘\n" RESET);
+        printf(YELLOW "  Latitude: " RED " ERROR!\n" RESET);
+        printf(YELLOW "  Longitude: "RED " ERROR!\n" RESET);
+        printf(RED BOLD "  ┌──────────────────────────────────────────┐\n");
+        printf(         "  │        Your address wasn't found!        │\n");
+        printf(         "  │     You're in the middle of nowhere!     │\n");
+        printf(         "  │                    ~~~                   │\n");
+        printf(         "  │       Try providing a valid address,     │\n");
+        printf(         "  │         or leave out parts such as       │\n");
+        printf(         "  │           the zip code and state.        │\n");
+        printf(         "  └──────────────────────────────────────────┘\n" RESET);
         printf("\n");
         exit(1);
     } else {
@@ -488,16 +493,12 @@ struct ImageIDs get_image_ids_at_coords(double lat, double lng, int allow_pano, 
 
             cJSON *image;
             cJSON *images = cJSON_GetObjectItemCaseSensitive(root, "data");
-            int i = 0;
-            cJSON_ArrayForEach(image, images) {
-                i++;
-            }
 
-            i = 0;
+            int num_images = 0;
             cJSON_ArrayForEach(image, images) {
                 //printf("> Found image ID at coordinates: %s\n", cJSON_GetObjectItemCaseSensitive(image, "id") -> valuestring);
-                strcpy(image_ids.array[i], cJSON_GetObjectItemCaseSensitive(image, "id") -> valuestring);
-                i++;
+                strcpy(image_ids.array[num_images], cJSON_GetObjectItemCaseSensitive(image, "id") -> valuestring);
+                num_images++;
             }
             cJSON_Delete(root);
             curl_easy_cleanup(curl);
@@ -508,7 +509,9 @@ struct ImageIDs get_image_ids_at_coords(double lat, double lng, int allow_pano, 
             // Now that we have the image IDs from Mapillary around the specified coordinates in an array, we can check whether each image ID if it is in a sequence.
             // If it is in a sequence, we return all IDs in the sequence.
             char *first_sequence_id = "";
-            for (int i = 0; i < sizeof(image_ids.array) / sizeof(image_ids.array[0]); i++) {
+            for (int i = 0; i < num_images; i++) {
+                printf("\b\b\b\b\b\b\b\b\b\b\b%04d / %04d", i + 1, num_images);
+                fflush(stdout);
                 // for each image ID, check if it is in a sequence
                 struct ImageMetadata image_metadata = get_image_metadata(image_ids.array[i], key);
                 // does not have empty sequence               and      first sequence not set, so == ""  or       first sequence == image sequence
@@ -521,7 +524,7 @@ struct ImageIDs get_image_ids_at_coords(double lat, double lng, int allow_pano, 
                         //printf("> Image is in sequence %s\n> Searching for other images in the sequence...\n", image_metadata.sequence);
                         first_sequence_id = image_metadata.sequence;
                         // empty image_ids.array
-                        for (int i; i < sizeof(image_ids.array) / sizeof(image_ids.array[0]); i++) {
+                        for (int i = 0; i < sizeof(image_ids.array) / sizeof(image_ids.array[0]); i++) {
                             strcpy(image_ids.array[i], "");
                         }
                         // do a query using https://www.mapillary.com/developer/api-documentation#sequence as a reference
@@ -560,10 +563,6 @@ struct ImageIDs get_image_ids_at_coords(double lat, double lng, int allow_pano, 
 
                                 cJSON *image;
                                 cJSON *images = cJSON_GetObjectItemCaseSensitive(root, "data");
-                                int i = 0;
-                                cJSON_ArrayForEach(image, images) {
-                                    i++;
-                                }
 
                                 i = 0;
                                 cJSON_ArrayForEach(image, images) {
@@ -584,7 +583,7 @@ struct ImageIDs get_image_ids_at_coords(double lat, double lng, int allow_pano, 
 
             // if no sequence ID was found, delete everything in the image_ids.array array except for the first image ID
             //printf("No sequence of images was found, returning first image only\n");
-            for (int i; i < sizeof(image_ids.array) / sizeof(image_ids.array[0]); i++) {
+            for (int i = 0; i < sizeof(image_ids.array) / sizeof(image_ids.array[0]); i++) {
                 if (i != 0) {
                     strcpy(image_ids.array[i], "");
                 }
@@ -592,6 +591,7 @@ struct ImageIDs get_image_ids_at_coords(double lat, double lng, int allow_pano, 
             return image_ids;
         }
     }
+    reset_buffering();
     strcpy(image_ids.array[0], "");
     return image_ids;
 }
@@ -648,11 +648,13 @@ struct ImageMetadata save_image(char *image_id, int order_in_sequence, double hd
     return image_metadata;
 }
 
+
 // Clears the image cache folder.
 void delete_images() {
     remove("image_cache/*.jpg");
     // TODO: finish this!!!
 }
+
 
 // Converts human-readible address to latitude and longitude coordinates using Nominatim's public API.
 // `address` address to get coordinates for
@@ -669,12 +671,13 @@ double* address_to_coords(char *address) {
     char request_url[200]; // TODO: reduce 512, I do not need this much memory
     snprintf(request_url, 200, "https://nominatim.openstreetmap.org/search?q=%s&format=jsonv2", address);
     // replace spaces in address with +
-    for (int i=0; request_url[i] != '\0'; i++) {
+    for (int i = 0; request_url[i] != '\0'; i++) {
         if (request_url[i] == ' ') {
             request_url[i] = '+';
         }
     }
-    printf("Geocoding coordinates from address using Nominatim: %s\n", request_url);
+    //printf("Geocoding coordinates from address using Nominatim: %s\n", request_url);
+    printf(GREEN "Geocoding coordinates from address using Nominatim...\n");
 
     // make the request using curl
     CURL *curl = curl_easy_init();
@@ -724,7 +727,7 @@ double* address_to_coords(char *address) {
 // Front-end for displaying images
 // Uses code from https://github.com/gouwsxander/ascii-view for displaying images as ASCII
 int display_image(struct ImageMetadata image_metadata, int max_width, int max_height, float character_ratio, float edge_threshold, int use_retro_colors) {
-    // TODO: Future improvements:
+    // TODO: Future improvements (converting equirectangular images to a perspective projection):
     // see https://help.mapillary.com/hc/en-us/articles/115001465989-360-cameras
     // and see https://ikyle.me/blog/2026/render-360-equirectangular
     // and also see https://developers.google.com/streetview/spherical-metadata
@@ -761,11 +764,61 @@ int main() {
     delete_images();
 
     // opening sequence, greet user
-    printf("\n\nRoam\n\n\n");
-    printf("Street-level imagery powered by Mapillary (https://mapillary.com)\nGeocoding powered by Nominatim (https://nominatim.org)\n");
-    printf("All imagery is licensed under the Creative Commons Share Alike (CC BY-SA) license, unless stated otherwise.\nMore information is available at https://mapillary.com/terms\n\n\n");
+    reset_buffering();
+    printf(CLEAR GREEN HIDE_CUR);
 
+    char *opening_str[] = {
+        "",
+        "",
+        "ROAM",
+        "",
+        "Street-level imagery powered by Mapillary (https://mapillary.com)",
+        "Geocoding powered by Nominatim (https://nominatim.org)",
+        "All imagery is licensed under the Creative Commons Share Alike (CC BY-SA) license, unless stated otherwise.",
+        "More information is available at https://mapillary.com/terms",
+        "ASCII art generation by Xander Gouws' ascii-art repo (https://github.com/gouwsxander/ascii-view)",
+        "",
+        "Presenting: ROAM - programmed by Benjamin Chase and Kamer Isci",
+        ""
+    };
+    for (int i = 0; i < sizeof(opening_str) / sizeof(opening_str[0]); i++) {
+        for (int j = 0; j < 4; j++) {
+            printf("█");
+            fflush(stdout);
+            usleep(200 * 1000);
+            printf("\b \b");
+            fflush(stdout);
+            usleep(200 * 1000);
+        }
+        printf(" ");
+        for (int j = 0; j < strlen(opening_str[i]); j++) {
+            printf("\b%c█", opening_str[i][j]);
+            fflush(stdout);
+            usleep(50 * 1000);
+        }
+        printf("\b \n");
+        fflush(stdout);
+    }
+    usleep(5 * 1000 * 1000);
+    printf(RESET SHOW_CUR "\b\n");
+    fflush(stdout);
+    //printf("\n\nroam\n\n\n");
+    //printf("Street-level imagery powered by Mapillary (https://mapillary.com)\nGeocoding powered by Nominatim (https://nominatim.org)\n");
+    //printf("All imagery is licensed under the Creative Commons Share Alike (CC BY-SA) license, unless stated otherwise.\nMore information is available at https://mapillary.com/terms\n\n\n");
 
+    char *key = getenv("MAPILLARY_TOKEN_ROAM");
+    if (key == NULL) {
+        printf(RED);
+        printf("\n┌──────────────────────────────────────────────────────────────────────────┐\n");
+        printf("│                  [!] No Mapillary API key could be found,                │\n");
+        printf("│                    please follow the instructions here:                  │\n");
+        printf("│ https://github.com/perspector/roam/tree/main#getting-a-mapillary-api-key │\n");
+        printf("└──────────────────────────────────────────────────────────────────────────┘\n\n");
+        printf(RESET);
+        fflush(stdout);
+        usleep(7 * 1000 * 1000);
+        exit(1);
+    }
 
     char country[64]  = {0};
     char state[64]    = {0};
@@ -774,14 +827,15 @@ int main() {
     char street[128]  = {0};
     char house[16]    = {0};
     double lat = 0.0, lon = 0.0;
- 
-   
+
+    printf(CLEAR);
     draw_fireworks();
+    printf(CLEAR);
     draw_title();
- 
+
     printf(SHOW_CUR);
     ask_address(country, state, city, zip, street, house);
- 
+
     char full_address[sizeof(country) + sizeof(state) + sizeof(city) + sizeof(zip) + sizeof(street) + sizeof(house)];
     snprintf(full_address, sizeof(full_address), "%s %s %s %s %s %s", street, house, city, zip, state, country);
     //double *coords = address_to_coords("Fahrradbruecke Konstanz"); // TODO: Don't hardcode this!!! Get user input!
@@ -790,11 +844,13 @@ int main() {
 
     show_result(country, city, state, zip, street, house, coords[0], coords[1]);
 
-    char *key = getenv("MAPILLARY_TOKEN_ROAM");
+    reset_buffering();
 
     struct ImageIDs image_ids;
-    printf("Searching for a sequence of images near the coordinates...\n");
+    printf("Searching for a (non-panoramic) sequence of images near the coordinates...\n");
+    fflush(stdout);
     image_ids = get_image_ids_at_coords(coords[0], coords[1], 0, key);
+
     if (strcmp(image_ids.array[0], "")) {
         int num_images = 0;
         for (int i = 0; i < sizeof(image_ids.array) / sizeof(image_ids.array[0]); i++) {
@@ -803,11 +859,11 @@ int main() {
                 num_images++;
             }
         }
-        printf("Found images at coordinates!\nSaving images... 0001 / %04i", num_images);
+        printf("\nFound images at coordinates!\nSaving images... 0001 / %04i", num_images);
         fflush(stdout); // since we're not printing a newline, most terminals require manually flushing content buffer to screen
 
         // Make the terminal fully buffered, so that each frame can be printed at once. Reduces frame flickering.
-        setvbuf(stdout, NULL, _IOFBF, 4096);
+        setvbuf(stdout, NULL, _IOFBF, 8192);
 
         for (int i = 0; i < num_images; i++) {
             // if the image ID is present in the array and is not an empty space
@@ -817,22 +873,46 @@ int main() {
                 struct ImageMetadata image_metadata;
                 image_metadata = save_image(image_ids.array[i], i, 0.0, key);
                 
-                printf("\n\n\n\n\n\n\n\n\n\n");
+                printf("\n");
                 //fflush(stdout);
-                display_image(image_metadata, 200, 68, 2, 1.5, 0);
+                display_image(image_metadata, 182, 68, 2, 1.5, 0);
 
-                printf("Image %04i / %04i | All images are from Mapillary (https://mapillary.com)\n", i + 1, num_images);
+                printf(CYAN "Image %04i / %04i                                                                                //  All images are from Mapillary (https://mapillary.com)\n" RESET, i + 1, num_images);
                 fflush(stdout);
             }
         }
 
+        draw_fireworks();
+        draw_title();
+
         // reset buffering to no buffering so output is shown immediately as before
         setbuf(stdout, NULL);
 
-        printf("\n");
+        printf("\n\n\n");
     } else {
-        printf("\033[31m \n[!] No image could be found at the specified location, please try another location.\nMapillary is crowdsourced by people like you! You can help by adding some imagery at [https://mapillary.com]\033[0m\n\n");
+        printf(RED);
+        printf("\n┌────────────────────────────────────────┐\n");
+        printf("│     [!] No image could be found        │\n");
+        printf("│      at the specified location,        │\n");
+        printf("│     please try another location.       │\n");
+        printf("│                  ~~~                   │\n");
+        printf("│  *    Mapillary is crowdsourced    *   │\n");
+        printf("│         by people like you!            │\n");
+        printf("│     You can help by adding some        │\n");
+        printf("│   imagery at [https://mapillary.com].  │\n");
+        printf("└────────────────────────────────────────┘\n\n");
+        printf(RESET);
+        fflush(stdout);
+        usleep(7 * 1000 * 1000);
     }
+
+    printf(CLEAR);
+    draw_title();
+
+    // reset buffering to no buffering so output is shown immediately as before
+    setbuf(stdout, NULL);
+
+    printf("\n\n\n");
 
     return 0;
 }
