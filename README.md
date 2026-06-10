@@ -5,7 +5,7 @@ A nostalgic way to wander around the world. Displays street-level imagery in the
 
 Written in ANSI C.
 
-Looks best in [cool-retro-term](https://github.com/Swordfish90/cool-retro-term) with RGB colors enabled.
+Looks best in [cool-retro-term](https://github.com/Swordfish90/cool-retro-term) with a width of 182 characters and RGB colors enabled.
 
 ## Table of Contents
 - [Installing](#installing)
