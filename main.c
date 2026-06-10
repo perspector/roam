@@ -16,9 +16,227 @@ Special thanks to Xander Gouws (GitHub @gouwsxander) for his incredible ascii-vi
 #include <curl/easy.h>
 #include "cJSON.h"
 
+#include <unistd.h>
+#include <time.h>
+#include <math.h>
+
 // for ASCII art, from https://github.com/gouwsxander/ascii-view
 #include "ascii-view/include/image.h"
 #include "ascii-view/include/print_image.h"
+
+
+// For colored text, uses ANSI escape sequences
+#define RESET    "\033[0m"
+#define BOLD     "\033[1m"
+#define DIM      "\033[2m"
+
+#define RED      "\033[31m"
+#define YELLOW   "\033[33m"
+#define GREEN    "\033[32m"
+#define CYAN     "\033[36m"
+#define MAGENTA  "\033[35m"
+#define WHITE    "\033[97m"
+#define ORANGE   "\033[38;5;214m"
+#define GOLD     "\033[38;5;220m"
+
+#define CLEAR    "\033[2J\033[H"
+#define HIDE_CUR "\033[?25l"
+#define SHOW_CUR "\033[?25h"
+
+/* Move cursor: row, col (1-indexed) */
+#define MOVE(r,c) printf("\033[%d;%dH", (r), (c))
+
+/* ── Terminal size (fallback 80x24) ───────────────────────── */
+#define COLS 80
+#define ROWS 24
+
+/* ── Firework particle ────────────────────────────────────── */
+typedef struct {
+    double x, y;   /* position */
+    double vx, vy; /* velocity */
+    int    alive;
+    char   glyph;
+    const char *color;
+} Particle;
+
+#define MAX_PARTS 128
+
+static const char *SPARK_COLORS[] = {
+    RED, YELLOW, GREEN, CYAN, MAGENTA, ORANGE, GOLD, WHITE
+};
+static const int N_COLORS = 8;
+static const char GLYPHS[] = "*+.o'`ROAM";
+static const int N_GLYPHS = 10;
+
+static void burst(Particle *parts, int *count, double cx, double cy)
+{
+    int n = 24 + rand() % 16;
+    for (int i = 0; i < n && *count < MAX_PARTS; i++, (*count)++) {
+        double angle = (2.0 * M_PI * i) / n;
+        double speed = 0.4 + (rand() % 100) / 100.0 * 1.2;
+        parts[*count].x     = cx;
+        parts[*count].y     = cy;
+        parts[*count].vx    = cos(angle) * speed;
+        parts[*count].vy    = sin(angle) * speed * 0.55; /* squish vertically */
+        parts[*count].alive = 1;
+        parts[*count].color = SPARK_COLORS[rand() % N_COLORS];
+        parts[*count].glyph = GLYPHS[rand() % N_GLYPHS];
+    }
+}
+
+static void draw_fireworks(void)
+{
+    srand((unsigned)time(NULL));
+    printf(HIDE_CUR CLEAR);
+
+    /* Three burst centres */
+    double centres[3][2] = {
+        {20, 7}, {60, 5}, {40, 9}
+    };
+
+    for (int b = 0; b < 3; b++) {
+        Particle parts[MAX_PARTS] = {0};
+        int count = 0;
+        burst(parts, &count, centres[b][0], centres[b][1]);
+
+        /* Animate this burst */
+        for (int frame = 0; frame < 17; frame++) {
+            printf(CLEAR);
+
+            /* Animated blinking colorful ROAM title during fireworks */
+            const char *roam_colors[] = {RED, YELLOW, GREEN, CYAN, MAGENTA, ORANGE, GOLD};
+            int n_roam_colors = 7;
+            const char *roam_letters = "ROAM";
+            int title_col = (COLS - 7) / 2; /* 4 letters + 3 spaces between = 7 chars wide -WE CAN WRITE SOMETHING DIFFERENT TOO LIKE "ROAMING...""*/
+
+            for (int li = 0; li < 4; li++) {
+                const char *col = roam_colors[(frame + li) % n_roam_colors];
+                MOVE(ROWS / 2, title_col + li * 2);
+                if ((frame + li) % 3 == 0) {
+                    printf(BOLD "%s%c" RESET, col, roam_letters[li]);
+                } else {
+                    printf(DIM "%s%c" RESET, col, roam_letters[li]);
+                }
+            }
+
+            for (int p = 0; p < count; p++) {
+                if (!parts[p].alive) continue;
+
+                int col = (int)round(parts[p].x);
+                int row = (int)round(parts[p].y);
+
+                if (row >= 1 && row <= ROWS - 3 && col >= 1 && col <= COLS) {
+                    MOVE(row, col);
+                    printf("%s%c%s", parts[p].color, parts[p].glyph, RESET);
+                }
+
+                parts[p].x  += parts[p].vx;
+                parts[p].y  += parts[p].vy;
+                parts[p].vy += 0.08; /* gravity */
+
+                /* Fade out near edge or after time */
+                if (frame > 8) parts[p].alive = 0;
+            }
+
+            fflush(stdout);
+            usleep(90000); /* 60 ms per frame */
+        }
+    }
+}
+
+/* ── Title card ───────────────────────────────────────────── */
+static void draw_title(void)
+{
+    printf(CLEAR);
+
+    /* Simple big-text ROAM using block characters - WE CAN CHANGE THE DESIGN HERE ALSO*/
+    const char *lines[] = {
+        "          ██████╗  ██████╗  █████╗  ███╗   ███╗",
+        "          ██╔══██╗██╔═══██╗██╔══██╗ ████╗ ████║",
+        "          ██████╔╝██║   ██║███████║ ██╔████╔██║",
+        "          ██╔══██╗██║   ██║██╔══██║ ██║╚██╔╝██║",
+        "          ██║  ██║╚██████╔╝██║  ██║ ██║ ╚═╝ ██║",
+        "          ╚═╝  ╚═╝ ╚═════╝ ╚═╝  ╚═╝ ╚═╝     ╚═╝",
+    };
+    int n = sizeof(lines) / sizeof(lines[0]);
+    int start_row = (ROWS - n) / 2 - 2;
+
+    for (int i = 0; i < n; i++) {
+        MOVE(start_row + i, 1);
+        printf(GOLD BOLD "%s" RESET, lines[i]);
+    }
+
+    MOVE(start_row + n + 1, 1);
+    /* centre the tagline */
+    printf("           %sby Benjamin Chase and Kamer Isci%s\n", DIM CYAN, RESET);
+
+    fflush(stdout);
+    usleep(2400000); /* hold for 2.4 s */
+}
+
+/* ── Input helpers ────────────────────────────────────────── */
+static void prompt(const char *label, char *buf, int max)
+{
+    printf(CYAN BOLD "  ▶  " RESET WHITE "%s" RESET ": ", label);
+    fflush(stdout);
+    if (fgets(buf, max, stdin)) {
+        buf[strcspn(buf, "\n")] = '\0'; /* strip newline */
+    }
+}
+
+static void ask_address(char *country, char *state, char *city, char *zip, char *street, char *house)
+{
+    printf(CLEAR);
+    MOVE(3, 1);
+    printf(GOLD BOLD "  ┌──────────────────────────────────────┐\n");
+    printf(        "  │            WHERE ARE YOU?            │\n");
+    printf(        "  └──────────────────────────────────────┘\n" RESET);
+    printf("\n");
+
+    prompt("Country", country, 64);
+    printf("\n");
+    prompt("State", state, 64);
+    printf("\n");
+    prompt("City   ", city,    64);
+    printf("\n");
+    prompt("Zip Code", zip, 64);
+    printf("\n");
+    prompt("Street ", street,  128);
+    printf("\n");
+    prompt("House Number ", house,   16);
+    printf("\n");
+}
+
+
+/* ── Result display ───────────────────────────────────────── */
+static void show_result(const char *country, const char *city, const char *state,
+                        const char *zip, const char *street,  const char *house,
+                        double lat, double lon) {
+    printf("\n");
+    printf(GREEN BOLD "  ┌──────────────────────────────────────────┐\n");
+    printf(          "  │              Address summary             │\n");
+    printf(          "  └──────────────────────────────────────────┘\n" RESET);
+    printf("\n");
+    printf(CYAN "  Country  " RESET ": %s\n", country);
+    printf(CYAN "  City     " RESET ": %s\n", city);
+    printf(CYAN "  State    " RESET ": %s\n", state);
+    printf(CYAN "  Zip Code " RESET ": %s\n", zip);
+    printf(CYAN "  Street   " RESET ": %s %s\n", street, house);
+    printf("\n");
+
+    if (lat == 0.0 && lon == 0.0) {
+        printf(YELLOW "  Latitude " RESET ": ERROR!\n");
+        printf(YELLOW "  Longitude" RESET ": ERROR!\n");
+        printf(GREEN BOLD "  ┌──────────────────────────────────────────┐\n");
+        printf(           "  │      You're in the middle of nowhere     │\n");
+        printf(           "  └──────────────────────────────────────────┘\n" RESET);
+        printf("\n");
+        exit(1);
+    } else {
+        printf(YELLOW "  Latitude " RESET ": %lf\n", lat);
+        printf(YELLOW "  Longitude" RESET ": %lf\n", lon);
+    }    
+}
 
 
 // struct to store data returned from Mapillary API GET requests
@@ -66,8 +284,7 @@ void reset_buffering() {
 
 
 // callback function for curl, writes response data from API to memory, adapted from https://curl.se/libcurl/c/CURLOPT_WRITEFUNCTION.html and OpenAI ChatGPT (GPT-5.5)
-size_t write_callback(void *data, size_t size, size_t nmemb, void *clientp)
-{
+size_t write_callback(void *data, size_t size, size_t nmemb, void *clientp) {
     size_t total_size = size * nmemb;
     struct Memory *mem = (struct Memory *)clientp;
     char *ptr = realloc(mem->response, mem->size + total_size + 1);
@@ -153,7 +370,11 @@ struct ImageMetadata get_image_metadata(char *image_id, char *key) {
             }
 
             cJSON *creator = cJSON_GetObjectItemCaseSensitive(root, "creator");
-            strcpy(image_metadata.creator, cJSON_GetObjectItemCaseSensitive(creator, "username") -> valuestring);
+            if (cJSON_IsString(cJSON_GetObjectItemCaseSensitive(creator, "username"))) {
+                strcpy(image_metadata.creator, cJSON_GetObjectItemCaseSensitive(creator, "username") -> valuestring);
+            } else {
+                strcpy(image_metadata.creator, "");
+            }
 
             if (cJSON_IsNumber(cJSON_GetObjectItemCaseSensitive(root, "height"))) {
                 image_metadata.height = cJSON_GetObjectItemCaseSensitive(root, "height") -> valueint;
@@ -544,10 +765,32 @@ int main() {
     printf("Street-level imagery powered by Mapillary (https://mapillary.com)\nGeocoding powered by Nominatim (https://nominatim.org)\n");
     printf("All imagery is licensed under the Creative Commons Share Alike (CC BY-SA) license, unless stated otherwise.\nMore information is available at https://mapillary.com/terms\n\n\n");
 
-    double *coords = address_to_coords("Fahrradbruecke Konstanz");
-    printf("Geocoded coordinates using Nominatim: lat: %lf lon: %lf\n", coords[0], coords[1]);
 
-    char *key = getenv("MAPILLARY_TOKEN");
+
+    char country[64]  = {0};
+    char state[64]    = {0};
+    char city[64]     = {0};
+    char zip[16]      = {0};
+    char street[128]  = {0};
+    char house[16]    = {0};
+    double lat = 0.0, lon = 0.0;
+ 
+   
+    draw_fireworks();
+    draw_title();
+ 
+    printf(SHOW_CUR);
+    ask_address(country, state, city, zip, street, house);
+ 
+    char full_address[sizeof(country) + sizeof(state) + sizeof(city) + sizeof(zip) + sizeof(street) + sizeof(house)];
+    snprintf(full_address, sizeof(full_address), "%s %s %s %s %s %s", street, house, city, zip, state, country);
+    //double *coords = address_to_coords("Fahrradbruecke Konstanz"); // TODO: Don't hardcode this!!! Get user input!
+    double *coords = address_to_coords(full_address);
+    //printf("Geocoded coordinates using Nominatim: lat: %lf lon: %lf\n", coords[0], coords[1]);
+
+    show_result(country, city, state, zip, street, house, coords[0], coords[1]);
+
+    char *key = getenv("MAPILLARY_TOKEN_ROAM");
 
     struct ImageIDs image_ids;
     printf("Searching for a sequence of images near the coordinates...\n");
@@ -578,7 +821,7 @@ int main() {
                 //fflush(stdout);
                 display_image(image_metadata, 200, 68, 2, 1.5, 0);
 
-                printf("\nImage %04i / %04i | All images are from Mapillary (https://mapillary.com)\n", i + 1, num_images);
+                printf("Image %04i / %04i | All images are from Mapillary (https://mapillary.com)\n", i + 1, num_images);
                 fflush(stdout);
             }
         }
