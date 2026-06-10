@@ -9,6 +9,7 @@ Looks best in [cool-retro-term](https://github.com/Swordfish90/cool-retro-term) 
 
 ## Table of Contents
 - [Installing](#installing)
+- [Getting a Mapillary API Key](#getting-a-mapillary-api-key)
 - [Usage](#usage)
 - [Building](#building)
 - [Credits](#credits)
@@ -18,6 +19,7 @@ Simply clone the project using `git clone https://github.com/perspector/roam`
 
 Or alternatively, download the project as a .zip file and extract that to your computer.
 
+## Getting a Mapillary API Key
 You will also need a Mapillary API token, which you can get by making a developer account at [Mapillary](https://www.mapillary.com/dashboard/developers).
 
 Then just register a new application, add: app name, quick description, and company/university name. You can leave the company website and redirect URL blank.
