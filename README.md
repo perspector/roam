@@ -35,7 +35,10 @@ Tested on Fedora 44 GNU/Linux.
 Simply run with `./roam` , or by double-clicking the file (may need permissions to execute as a program).
 
 ## Building
-If you would like to build the code yourself, you can compile and run with `gcc -g -fsanitize=address -fno-omit-frame-pointer main.c ascii-view/src/image.c ascii-view/src/print_image.c -lcurl -lcjson -lm -Iascii-view/include && ./a.out`
+If you would like to build the code yourself, you can compile and run with
+```
+gcc -g -fsanitize=address -fno-omit-frame-pointer main.c ascii-view/src/image.c ascii-view/src/print_image.c -lcurl -lcjson -lm -Iascii-view/include && ./a.out
+```
 
 ## Credits
 - [Mapillary](https://mapillary.com) for excellent crowdsourced street-level imagery, also with a nice [API](https://www.mapillary.com/developer/api-documentation/)
