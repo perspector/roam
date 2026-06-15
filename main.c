@@ -778,7 +778,7 @@ int main() {
         "Geocoding powered by Nominatim (https://nominatim.org)",
         "All imagery is licensed under the Creative Commons Share Alike (CC BY-SA) license, unless stated otherwise.",
         "More information is available at https://mapillary.com/terms",
-        "ASCII art generation by Xander Gouws' ascii-art repo (https://github.com/gouwsxander/ascii-view)",
+        "ASCII art generation by Xander Gouws' ascii-view repo (https://github.com/gouwsxander/ascii-view)",
         "",
         "Presenting: ROAM - programmed by Benjamin Chase and Kamer Isci",
         ""
@@ -803,25 +803,45 @@ int main() {
     }
     usleep(5 * 1000 * 1000);
     printf(RESET SHOW_CUR "\b\n");
-    fflush(stdout);
+    fflush(stdout); // ensures all output is shown
+    fflush(stdin); // clears the input buffer so any accidentally pressed keys during the intro are not counted as user input
     //printf("\n\nroam\n\n\n");
     //printf("Street-level imagery powered by Mapillary (https://mapillary.com)\nGeocoding powered by Nominatim (https://nominatim.org)\n");
     //printf("All imagery is licensed under the Creative Commons Share Alike (CC BY-SA) license, unless stated otherwise.\nMore information is available at https://mapillary.com/terms\n\n\n");
 
-    char *key = getenv("MAPILLARY_TOKEN_ROAM");
-    if (key == NULL) {
+    char *key_env = getenv("MAPILLARY_TOKEN_ROAM"); // environment variable storing the Mapillary API key, may be set
+    char key[100] = {0};
+    if (key_env == NULL) {
         printf(RED);
         printf("\n┌──────────────────────────────────────────────────────────────────────────┐\n");
         printf("│                  [!] No Mapillary API key could be found,                │\n");
         printf("│                    please follow the instructions here:                  │\n");
         printf("│ https://github.com/perspector/roam/tree/main#getting-a-mapillary-api-key │\n");
+        printf("│                                     ~~~                                  │\n");
+        printf("│           Press ENTER if you are following the instructions above,       │\n");
+        printf("│                         Or, enter your API key here:                     │\n");
         printf("└──────────────────────────────────────────────────────────────────────────┘\n\n");
         printf(RESET);
         fflush(stdout);
-        printf(SHOW_CUR);
-        reset_buffering();
-        usleep(7 * 1000 * 1000);
-        exit(1);
+
+        char key_entered[100] = {0};
+        prompt("API Key", key_entered, 100);
+        if (!strcmp(key_entered, "")) {
+            fflush(stdout);
+            printf(SHOW_CUR);
+            reset_buffering();
+            //usleep(7 * 1000 * 1000);
+            exit(1);
+        }
+        for (int i = 0; i < sizeof(key_entered) / sizeof(key_entered[0]); i++) {
+            if (i == sizeof(key_entered) / sizeof(key_entered[0]) || key_entered[i] == 0) {
+                key_entered[i] = '\0';
+                break;
+            }
+        }
+        strcpy(key, key_entered);
+    } else {
+        strcpy(key,key_env);
     }
 
     char country[64]  = {0};
