@@ -15,6 +15,10 @@ Looks best in [cool-retro-term](https://github.com/Swordfish90/cool-retro-term) 
 - [Credits](#credits)
 
 ## Installing
+### Quick-Setup
+Just want the precompiled binary? Then head over to the [releases](https://github.com/perspector/roam/releases/latest) and download the appropriate file for your system.
+
+### Full Download
 Simply clone the project using `git clone https://github.com/perspector/roam`
 
 Or alternatively, download the project as a .zip file and extract that to your computer.
@@ -35,7 +39,7 @@ Enter the API access token when prompted by the program.
 ## Usage
 Tested on Fedora 44 GNU/Linux.
 
-Simply run with `./roam` , or by double-clicking the file (may need permissions to execute as a program).
+Simply run with `./roam` or `.\roam.exe` depending on your platform, or by double-clicking the file (may need permissions to execute as a program).
 
 ## Building
 If you would like to build the code yourself, you can compile and run with
