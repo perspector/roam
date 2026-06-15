@@ -21,9 +21,9 @@ Special thanks to Xander Gouws (GitHub @gouwsxander) for his incredible ascii-vi
 #include <math.h>
 
 // for ASCII art, from https://github.com/gouwsxander/ascii-view
-#include "ascii-view/include/image.h"
-#include "ascii-view/include/print_image.h"
-
+// remember to compile with -Iascii-view/include
+#include "image.h"
+#include "print_image.h"
 
 // For colored text, uses ANSI escape sequences
 #define RESET    "\033[0m"
