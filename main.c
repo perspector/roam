@@ -8,6 +8,7 @@ Also uses Nominatim's API for geocoding (https://nominatim.org)
 Special thanks to Xander Gouws (GitHub @gouwsxander) for his incredible ascii-viewer! (https://github.com/gouwsxander/ascii-view)
 */
 
+
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -15,6 +16,11 @@ Special thanks to Xander Gouws (GitHub @gouwsxander) for his incredible ascii-vi
 #include <curl/curl.h>
 #include <curl/easy.h>
 #include "cJSON.h"
+
+#include <locale.h>
+#ifdef _WIN32
+#include <windows.h>
+#endif
 
 #include <unistd.h>
 #include <time.h>
@@ -762,6 +768,12 @@ int display_image(struct ImageMetadata image_metadata, int max_width, int max_he
 
 // main program
 int main() {
+    // Make the Windows terminal use UTF-8 (codepage 65001 instead of the default 437 (default in the US))
+    #ifdef _WIN32
+        SetConsoleOutputCP(65001);
+        SetConsoleCP(65001);
+    #endif
+
     // clear image cache folder
     delete_images();
 
@@ -780,6 +792,8 @@ int main() {
         "More information is available at https://mapillary.com/terms",
         "ASCII art generation by Xander Gouws' ascii-view repo (https://github.com/gouwsxander/ascii-view)",
         "",
+        "Recommended minimum terminal dimensions are 182 x 52 (w * h) characters.",
+        "",
         "Presenting: ROAM - programmed by Benjamin Chase and Kamer Isci",
         ""
     };
@@ -796,12 +810,13 @@ int main() {
         for (int j = 0; j < strlen(opening_str[i]); j++) {
             printf("\b%c█", opening_str[i][j]);
             fflush(stdout);
-            usleep(50 * 1000);
+            usleep(30 * 1000);
         }
         printf("\b \n");
         fflush(stdout);
     }
     usleep(5 * 1000 * 1000);
+
     printf(RESET SHOW_CUR "\b\n");
     fflush(stdout); // ensures all output is shown
     fflush(stdin); // clears the input buffer so any accidentally pressed keys during the intro are not counted as user input
@@ -887,7 +902,7 @@ int main() {
         fflush(stdout); // since we're not printing a newline, most terminals require manually flushing content buffer to screen
 
         // Make the terminal fully buffered, so that each frame can be printed at once. Reduces frame flickering.
-        setvbuf(stdout, NULL, _IOFBF, 8192);
+        setvbuf(stdout, NULL, _IOFBF, 16384);
 
         for (int i = 0; i < num_images; i++) {
             // if the image ID is present in the array and is not an empty space
