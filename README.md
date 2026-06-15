@@ -25,9 +25,12 @@ You will also need a Mapillary API token, which you can get by making a develope
 Then just register a new application, add: app name, quick description, and company/university name. You can leave the company website and redirect URL blank.
 Make sure to give READ access! Then, just copy the `Access Token`.
 
+### Option 1:
 Save your API access token to an environment variable:\
 In GNU/Linux: `export MAPILLARY_TOKEN_ROAM="MLY|0123|456"`\
 Replace `"MLY|0123|456"` with your access token.
+### Option 2:
+Enter the API access token when prompted by the program.
 
 ## Usage
 Tested on Fedora 44 GNU/Linux.
