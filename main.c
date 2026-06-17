@@ -8,7 +8,7 @@ Also uses Nominatim's API for geocoding (https://nominatim.org)
 Special thanks to Xander Gouws (GitHub @gouwsxander) for his incredible ascii-viewer! (https://github.com/gouwsxander/ascii-view)
 */
 
-
+// used by backend and frontend
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -17,14 +17,19 @@ Special thanks to Xander Gouws (GitHub @gouwsxander) for his incredible ascii-vi
 #include <curl/easy.h>
 #include "cJSON.h"
 
-#include <locale.h>
+// needed on Windows
 #ifdef _WIN32
 #include <windows.h>
 #endif
 
+// used by UI
 #include <unistd.h>
 #include <time.h>
 #include <math.h>
+
+// used for keypress detection
+#include <termios.h>
+#include <fcntl.h>
 
 // for ASCII art, from https://github.com/gouwsxander/ascii-view
 // remember to compile with -Iascii-view/include
@@ -255,6 +260,27 @@ static void show_result(const char *country, const char *city, const char *state
         printf(YELLOW "  Latitude " RESET ": %lf\n", lat);
         printf(YELLOW "  Longitude" RESET ": %lf\n", lon);
     }    
+}
+
+// returns 0 if no key pressed and 1 if a key is pressed. Non-blocking, used for skipping intro.
+int kbhit(void) {
+    struct termios oldt, newt;
+    tcgetattr(STDIN_FILENO, &oldt);
+    newt = oldt;
+    newt.c_lflag &= ~(ICANON | ECHO); // Set non-canonical mode
+    tcsetattr(STDIN_FILENO, TCSANOW, &newt);
+    int oldf = fcntl(STDIN_FILENO, F_GETFL, 0);
+    fcntl(STDIN_FILENO, F_SETFL, oldf | O_NONBLOCK);
+
+    int ch = getchar(); // Read character
+    tcsetattr(STDIN_FILENO, TCSANOW, &oldt); // Restore old settings
+    fcntl(STDIN_FILENO, F_SETFL, oldf); // Restore old flags
+
+    if(ch != EOF) {
+        ungetc(ch, stdin); // Put the character back
+        return 1; // Key was pressed
+    }
+    return 0; // No key was pressed
 }
 
 
@@ -797,8 +823,18 @@ int main() {
         "Presenting: ROAM - programmed by Benjamin Chase and Kamer Isci",
         ""
     };
+    char c = kbhit();
     for (int i = 0; i < sizeof(opening_str) / sizeof(opening_str[0]); i++) {
+        c = kbhit();
+        if (c == 1) {
+            printf(" [SKIPPED] ");
+            break;
+        }
         for (int j = 0; j < 4; j++) {
+            if (c == 1) {
+                printf(" [SKIPPED] ");
+                break;
+            }
             printf("█");
             fflush(stdout);
             usleep(200 * 1000);
