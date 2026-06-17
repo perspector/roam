@@ -21,6 +21,7 @@ Looks best in [cool-retro-term](https://github.com/Swordfish90/cool-retro-term) 
 | Other GNU/Linux |  Probably  |
 | Windows 11      |     No     |
 | MacOS           |     No     |
+* In the future, we may add support for other platforms. Contributions are always welcome!
 
 ### Quick-Setup
 Just want the precompiled binary? Then head over to the [releases](https://github.com/perspector/roam/releases/latest) and download the appropriate file for your system.
