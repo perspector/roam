@@ -56,6 +56,11 @@ Alternatively, try double-clicking the file (may need permissions to execute as 
 ## Building
 If you would like to build the code yourself, you can compile and run with
 ```
+make
+./roam
+```
+Or for more detailed output:
+```
 gcc -g -fsanitize=address -fno-omit-frame-pointer main.c ascii-view/src/image.c ascii-view/src/print_image.c -lcurl -lcjson -lm -Iascii-view/include && ./a.out
 ```
 
