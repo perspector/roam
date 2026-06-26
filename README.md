@@ -7,6 +7,10 @@ Written in ANSI C.
 
 Looks best in [cool-retro-term](https://github.com/Swordfish90/cool-retro-term) with a width of 182 characters and RGB colors enabled.
 
+## Demo
+[![roam demo](https://img.youtube.com/vi/hAMZI7ajrXs/0.jpg)](https://www.youtube.com/watch?v=hAMZI7ajrXs "roam demo")\
+(click the thumbnail to play on YouTube)
+
 ## Table of Contents
 - [Installing](#installing)
 - [Getting a Mapillary API Key](#getting-a-mapillary-api-key)
