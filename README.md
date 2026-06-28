@@ -25,7 +25,7 @@ Looks best in [cool-retro-term](https://github.com/Swordfish90/cool-retro-term) 
 | Other GNU/Linux |  Probably  |
 | Windows 11      |     No     |
 | MacOS           |     No     |
-* In the future, we may add support for other platforms. Contributions are always welcome!
+* _In the future, we may add support for other platforms. Contributions are always welcome!_
 
 ### Quick-Setup
 Just want the precompiled binary? Then head over to the [releases](https://github.com/perspector/roam/releases/latest) and download the appropriate file for your system.
@@ -53,7 +53,8 @@ Enter the API access token when prompted by the program.
 ## Usage
 Tested on Fedora 44 GNU/Linux.
 
-Simply run with `./roam_v1_0_0_linux_amd64` or another version from the terminal.\
+Simply add permissions to execute with `chmod +x ./roam_v1_0_0_linux_amd64`, then run with `./roam_v1_0_0_linux_amd64` from the terminal.\
+Be sure to replace `roam_v1_0_0_linux_amd64` with your downloaded version.\
 Alternatively, try double-clicking the file (may need permissions to execute as a program).
 <!-- or `.\roam.exe` depending on your platform, or by double-clicking the file (may need permissions to execute as a program). -->
 
