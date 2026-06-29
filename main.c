@@ -262,6 +262,7 @@ static void show_result(const char *country, const char *city, const char *state
     }    
 }
 
+
 // returns 0 if no key pressed and 1 if a key is pressed. Non-blocking, used for skipping intro.
 int kbhit(void) {
     struct termios oldt, newt;
@@ -277,10 +278,16 @@ int kbhit(void) {
     fcntl(STDIN_FILENO, F_SETFL, oldf); // Restore old flags
 
     if(ch != EOF) {
-        ungetc(ch, stdin); // Put the character back
+        //ungetc(ch, stdin); // Put the character back
         return 1; // Key was pressed
     }
     return 0; // No key was pressed
+}
+
+
+// clears input buffer instead of using fflush(stdin)
+void clear_inpt_buf() {
+    tcflush(STDIN_FILENO, TCIFLUSH); // credits to Claude Sonnet 4.6 because anything else I found online didn't work.
 }
 
 
@@ -855,7 +862,7 @@ int main() {
 
     printf(RESET SHOW_CUR "\b\n");
     fflush(stdout); // ensures all output is shown
-    fflush(stdin); // clears the input buffer so any accidentally pressed keys during the intro are not counted as user input
+    clear_inpt_buf(); // clears the input buffer so any accidentally pressed keys during the intro are not counted as user input
 
     char *key_env = getenv("MAPILLARY_TOKEN_ROAM"); // environment variable storing the Mapillary API key, may be set
     char key[100] = {0};
@@ -912,6 +919,7 @@ int main() {
     char go_again;
     do {
         printf(SHOW_CUR);
+        clear_inpt_buf();
         ask_address(country, state, city, zip, street, house);
 
         char full_address[sizeof(country) + sizeof(state) + sizeof(city) + sizeof(zip) + sizeof(street) + sizeof(house)];
@@ -990,13 +998,14 @@ int main() {
                 printf("  └────────────────────────────────────────┘\n\n");
                 printf(RESET);
                 fflush(stdout);
+                reset_buffering();
                 usleep(7 * 1000 * 1000);
             }
         }
-        fflush(stdout);
-        fflush(stdin);
         printf(SHOW_CUR);
-        prompt("Would you like to travel to another location? Y/n", &go_again, 21);
+        fflush(stdout);
+        clear_inpt_buf();
+        prompt("Would you like to travel to another location? Y/n", &go_again, 4);
         switch (go_again) {
             case 'N': program_end = 1; break;
             case 'n': program_end = 1; break;
